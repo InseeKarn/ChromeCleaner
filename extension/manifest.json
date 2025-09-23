@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Cluster",
+  "version": "1.0",
+  "description": "Manage Tabs and Bookmarks",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "My Extension"
+  },
+    "permissions": [
+    "tabs",
+    "bookmarks"
+  ],
+  "content_scripts": [
+    
+  ]
+}
