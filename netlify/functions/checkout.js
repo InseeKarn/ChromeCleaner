@@ -10,19 +10,32 @@ export async function handler(event, context) {
       line_items: [{
         price_data: {
           currency: 'usd',
-          product_data: { name: 'Donate' },
+          product_data: { name: 'Donate' }, 
           unit_amount: amount * 100,
         },
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: 'https://YOUR_NETLIFY_DOMAIN/success',
-      cancel_url: 'https://YOUR_NETLIFY_DOMAIN/cancel',
+      success_url: 'https://chromecleaner.netlify.app/.netlify/functions/success',
+      cancel_url: 'https://chromecleaner.netlify.app/.netlify/functions/cancel',
     });
 
-    return { statusCode: 200, body: JSON.stringify({ url: session.url }) };
+    return { 
+      statusCode: 200,
+      header: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      },
+      body: JSON.stringify({ url: session.url }) };
   } catch (err) {
     console.error(err);
-    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+    return { 
+      statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      },
+      body: JSON.stringify({ error: err.message })
+    };
   }
 }
