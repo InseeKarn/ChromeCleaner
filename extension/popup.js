@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const totalGroupsEl = document.getElementById('totalGroups');
     const groupedTabsEl = document.getElementById('groupedTabs');
     const ungroupedTabsEl = document.getElementById('ungroupedTabs');
+
+    // Progress bar
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
     
     // Show loading
     function showLoading() {
@@ -98,30 +102,67 @@ document.addEventListener('DOMContentLoaded', async () => {
     groupBtn.addEventListener('click', groupTabs);
     ungroupBtn.addEventListener('click', ungroupTabs);
     
-    // Always update stats when user open popup
-    await updateStats();
-    
-    // Update stats every 2 sec
-    setInterval(updateStats, 2000);
-});
+    // ============== Progress bar ==============
+
+    const goal = 1000;
+    const current = 0;
+    let displayedAmount = 0;
+
+    function animateProgress(target) {
+        const step = Math.ceil(goal / 100);
+        const interval = setInterval(() => {
+        if (displayedAmount < target) {
+            displayedAmount += step;
+            if (displayedAmount > target) displayedAmount = target;
+
+            const percentage = Math.min((displayedAmount / goal) * 100, 100);
+            if (progressBar && progressText) {
+            progressBar.style.width = percentage + '%';
+            progressText.textContent = `$${displayedAmount} / $${goal}`;
+            }
+        } else {
+            clearInterval(interval);
+        }
+        }, 30);
+    }
+
+    animateProgress(current);
+
+    // ============== Progress bar ==============
 
 
-document.getElementById('save-threshold').addEventListener('click', async () => {
+    // Save threshold button
+    const saveBtn = document.getElementById('save-threshold');
+    saveBtn.addEventListener('click', async () => {
     const hours = parseInt(document.getElementById('hours').value) || 0;
     const days = parseInt(document.getElementById('days').value) || 0;
     const weeks = parseInt(document.getElementById('weeks').value) || 0;
 
-    const ms = 
-        hours * 60 * 60 * 1000 + 
-        days * 24 * 60 * 60 * 1000 + 
-        weeks * 7 * 24 * 60 * 60 * 1000;
+    const ms =
+        hours * 3600000 +
+        days * 86400000 +
+        weeks * 604800000;
 
-    chrome.runtime.sendMessage({
-        action: 'setTimeThreshold',
-        milliseconds: ms
-    }, (response) => {
-        if (response?.success) {
-            alert('Saved time settings!');
-        }
+    chrome.runtime.sendMessage({ action: 'setTimeThreshold', milliseconds: ms }, (response) => {
+        if (response?.success) alert('Saved time settings!');
     });
+    });
+
+    // Donate button
+    const donateBtn = document.getElementById('donateBtn');
+    donateBtn.addEventListener('click', async () => {
+    const response = await fetch('https://yourserver.com/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: 500 }) // 5 USD
+    });
+    const data = await response.json();
+    chrome.tabs.create({ url: data.url });
+    });
+
+    
+    await updateStats();
+    setInterval(updateStats, 2000);
+
+
 });

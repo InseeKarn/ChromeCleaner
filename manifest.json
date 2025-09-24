@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "ChromeCleaner",
+  "version": "1.0",
+  "description": "Organize your chrome",
+  "permissions": [
+    "tabs",
+    "tabGroups",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "extension/popup.html",
+    "default_icon": {
+      "16": "extension/icons/icon16.png",
+      "48": "extension/icons/icon48.png",
+      "128": "extension/icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "extension/background.js"
+  },
+  "icons": {
+    "16": "extension/icons/icon16.png",
+    "48": "extension/icons/icon48.png",
+    "128": "extension/icons/icon128.png"
+  }
+}
