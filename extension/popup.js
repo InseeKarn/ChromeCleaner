@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Donate button
     const donateBtn = document.getElementById('donateBtn');
     donateBtn.addEventListener('click', async () => {
-    const response = await fetch('https://chromecleaner.netlify.app/functions/checkout', {
+    const response = await fetch('https://chromecleaner.netlify.app/.netlify/functions/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: 500 }) // 5 USD
