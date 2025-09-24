@@ -1,0 +1,15 @@
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Headers = "Content-Type"
+    Access-Control-Allow-Methods = "OPTIONS, POST, GET"
+
+[build]
+  publish = "extension"
+  functions = "netlify/functions"
+
+[dev]
+  functions = "netlify/functions"
+  publish = "extension"
+  port = 8888

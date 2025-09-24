@@ -148,23 +148,78 @@ async function filterOldTabs() {
 setInterval(filterOldTabs, 5000);
 
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'setAutoClean') {
-        autoCleanEnabled = !!request.enabled;
-        chrome.storage.sync.set({ autoCleanEnabled });
-        sendResponse({ success: true });
-        return true;
-    }
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    switch (msg.action) {
+        case 'setAutoClean':
+            autoCleanEnabled = !!msg.enabled;
+            chrome.storage.sync.set({ autoCleanEnabled });
+            sendResponse({ success: true });
+            break;
 
-    // Adjust time
-    if (request.action === 'setTimeThreshold') {
-        timeThreshold = request.milliseconds;
-        chrome.storage.sync.set({ timeThreshold: timeThreshold });
-        console.log('timeThreshold updated to', timeThreshold, 'ms');
-        sendResponse({ success: true });
-        return true;
+        case 'setTimeThreshold':
+            timeThreshold = msg.milliseconds;
+            chrome.storage.sync.set({ timeThreshold });
+            console.log('timeThreshold updated to', timeThreshold, 'ms');
+            sendResponse({ success: true });
+            break;
+
+        case 'getTabStats':
+            chrome.tabs.query({}, (tabs) => {
+                chrome.tabGroups.query({}, (groups) => {
+                    const groupedTabs = tabs.filter(tab => tab.groupId !== -1).length;
+                    sendResponse({
+                        success: true,
+                        data: {
+                            totalTabs: tabs.length,
+                            totalGroups: groups.length,
+                            groupedTabs: groupedTabs,
+                            ungroupedTabs: tabs.length - groupedTabs
+                        }
+                    });
+                });
+            });
+            return true; // async
+
+        case 'groupTabs':
+            groupTabs().then(() => sendResponse({ success: true }));
+            return true;
+
+        case 'ungroupTabs':
+            ungroupTabs().then(() => sendResponse({ success: true }));
+            return true;
+
+        case 'donate':
+            if (typeof msg.amount !== 'number') {
+                sendResponse({ success: false, error: 'Invalid amount' });
+                break;
+            }
+
+            const baseURL = msg.isLocal 
+                ? 'http://localhost:8888/.netlify/functions'
+                : 'https://chromecleaner.netlify.app/.netlify/functions';
+
+            fetch(`${baseURL}/checkout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: msg.amount })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.url) {
+                    sendResponse({ success: true, url: data.url });
+                } else {
+                    sendResponse({ success: false, error: 'No URL returned' });
+                }
+            })
+            .catch(err => sendResponse({ success: false, error: err.message }));
+
+            return true;
+
+        default:
+            sendResponse({ success: false, error: 'Unknown action' });
     }
 });
+
 
 chrome.storage.sync.get(['timeThreshold'], (data) => {
   if (data.timeThreshold) {
@@ -253,39 +308,7 @@ chrome.tabGroups.onUpdated.addListener(async (group) => {
   }
 });
 
-// Litsen popup
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'getTabStats') {
-    chrome.tabs.query({}, (tabs) => {
-      chrome.tabGroups.query({}, (groups) => {
-        const groupedTabs = tabs.filter(tab => tab.groupId !== -1).length;
-        sendResponse({
-          success: true,
-          data: {
-            totalTabs: tabs.length,
-            totalGroups: groups.length,
-            groupedTabs: groupedTabs,
-            ungroupedTabs: tabs.length - groupedTabs
-          }
-        });
-      });
-    });
-    return true;
-  }
 
-
-  if (request.action === 'groupTabs') {
-    groupTabs().then(() => sendResponse({ success: true }));
-    return true;
-  }
-
-  if (request.action === 'ungroupTabs') {
-    ungroupTabs().then(() => sendResponse({ success: true }));
-    return true;
-  }
-
-  sendResponse({ success: false, error: 'Unknown action' });
-});
 
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -297,3 +320,4 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onStartup.addListener(() => {
   setTimeout(() => groupTabs(), 2000);
 });
+

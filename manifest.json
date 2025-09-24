@@ -8,6 +8,10 @@
     "tabGroups",
     "storage"
   ],
+    "host_permissions": [
+    "http://localhost:8888/*",
+    "https://chromecleaner.netlify.app/*"
+  ],
   "action": {
     "default_popup": "extension/popup.html",
     "default_icon": {

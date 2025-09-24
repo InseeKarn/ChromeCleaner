@@ -149,26 +149,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Donate button
-    const donateBtn = document.getElementById('donateBtn');
-    donateBtn.addEventListener('click', async () => {
-        try {
-            const response = await fetch('https://chromecleaner.netlify.app/.netlify/functions/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: 500 }) // 5 USD
-            });
+    const donateButtons = document.querySelectorAll('.btn-donate');
+    donateButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const amount = parseInt(btn.dataset.amount);
+            const isLocal = window.location.hostname.includes('localhost');
 
-            const data = await response.json();
-
-            if (data.url) {
-                chrome.tabs.create({ url: data.url });
-            } else {
-                console.error('No URL returned from checkout session');
-            }
-
-        } catch (err) {
-            console.error('Failed to fetch checkout session:', err);
-        }
+            chrome.runtime.sendMessage(
+                { action: 'donate', amount, isLocal },
+                (response) => {
+                    if (response.success && response.url) {
+                        chrome.tabs.create({ url: response.url });
+                    } else {
+                        console.error('Donate failed:', response.error);
+                    }
+                }
+            );
+        });
     });
 
     

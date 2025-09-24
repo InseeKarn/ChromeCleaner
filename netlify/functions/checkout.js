@@ -1,10 +1,25 @@
-import Stripe from 'stripe';
+const Stripe = require('stripe');
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-08-27' });
 
-export async function handler(event, context) {
+exports.handler = async function(event, context) {
   console.log('Request body:', event.body);
+
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST,OPTIONS'
+      },
+      body: ''
+    };
+  }
+
   try {
 
+    console.log('Headers:', event.headers);
+    console.log('Body:', event.body); // 🔹 debug
     if (!event.body) {
       return {
         statusCode: 400,
@@ -14,6 +29,7 @@ export async function handler(event, context) {
     }
 
     const { amount } = JSON.parse(event.body);
+    console.log('Amount:', amount);
 
     if (!amount) {
       return {
@@ -44,7 +60,9 @@ export async function handler(event, context) {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type'
       },
-      body: JSON.stringify({ url: session.url }) };
+      body: JSON.stringify({ url: session.url })
+    };
+
   } catch (err) {
     console.error('Stripe error:', err);
     return { 
@@ -55,8 +73,5 @@ export async function handler(event, context) {
       },
       body: JSON.stringify({ error: err.message || 'Internal server error' })
     };
-    
   }
-  
-}
-
+};
