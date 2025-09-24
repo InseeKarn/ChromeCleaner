@@ -1,0 +1,26 @@
+{
+  "name": "chromecleaner",
+  "version": "1.0.0",
+  "description": "��#\u0000 \u0000C\u0000l\u0000u\u0000s\u0000t\u0000e\u0000r\u0000\r\u0000 \u0000",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/InseeKarn/Cluster.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/InseeKarn/Cluster/issues"
+  },
+  "homepage": "https://github.com/InseeKarn/Cluster#readme",
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "stripe": "^18.5.0"
+  }
+}
