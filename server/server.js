@@ -19,8 +19,8 @@ app.post('/create-checkout-session', async (req, res) => {
                 quantity: 1,
             }],
             mode: 'payment',
-            success_url: 'https://yourdomain.com/success',
-            cancel_url: 'https://yourdomain.com/cancel',
+            success_url: 'https://chromecleaner.netlify.app/.netlify/functions/success',
+            cancel_url: 'https://chromecleaner.netlify.app/.netlify/functions/cancel',
         });
         res.json({ url: session.url });
     } catch (err) {

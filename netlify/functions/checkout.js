@@ -26,7 +26,7 @@ export async function handler(event, context) {
 
     return { 
       statusCode: 200,
-      header: {
+      headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type'
       },
