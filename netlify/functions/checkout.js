@@ -5,6 +5,10 @@ export async function handler(event, context) {
   try {
     const { amount } = JSON.parse(event.body);
 
+    if (!amount) {
+      return { statusCode: 400, body: JSON.stringify({ error: 'Amount is required' }) };
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{

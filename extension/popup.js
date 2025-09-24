@@ -151,13 +151,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Donate button
     const donateBtn = document.getElementById('donateBtn');
     donateBtn.addEventListener('click', async () => {
-    const response = await fetch('https://chromecleaner.netlify.app/.netlify/functions/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: 500 }) // 5 USD
-    });
-    const data = await response.json();
-    chrome.tabs.create({ url: data.url });
+        try {
+            const response = await fetch('https://chromecleaner.netlify.app/.netlify/functions/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: 500 }) // 5 USD
+            });
+
+            const data = await response.json();
+
+            if (data.url) {
+                chrome.tabs.create({ url: data.url });
+            } else {
+                console.error('No URL returned from checkout session');
+            }
+
+        } catch (err) {
+            console.error('Failed to fetch checkout session:', err);
+        }
     });
 
     
