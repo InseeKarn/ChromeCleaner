@@ -1,14 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cluster</title>
+    <title>ChromeCleaner</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Cluster</h1>
-    <ul id="tabList"></ul>
+    <div class="header">
+        <img src="icons/bg_removed.png" alt="ChromeCleaner" class="header-icon">
+        <h2>ChromeCleaner</h2>
+    </div>
+    
+    <div class="stats" id="stats">
+        <div class="stat-item">
+            <span>Total Tabs:</span>
+            <span class="stat-value" id="totalTabs">-</span>
+        </div>
+        <div class="stat-item">
+            <span>Total Groups:</span>
+            <span class="stat-value" id="totalGroups">-</span>
+        </div>
+        <div class="stat-item">
+            <span>Grouped Tabs:</span>
+            <span class="stat-value" id="groupedTabs">-</span>
+        </div>
+        <div class="stat-item">
+            <span>Ungrouped Tabs:</span>
+            <span class="stat-value" id="ungroupedTabs">-</span>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button class="btn btn-primary" id="groupBtn">
+            📁 Group Tabs
+        </button>
+        
+        <button class="btn btn-secondary" id="ungroupBtn">
+            📂 Delete Groups
+        </button>
+    </div>
+    
+    <div class="loading" id="loading" style="display: none;">
+        Loading...
+    </div>
+    
+    <div class="footer">
+        Organize Your website
+    </div>
+
+    
+    <div class="auto_close_tab">
+
+        <label class="toggle">
+            <input type="checkbox" id="enable-filter">
+            <span class="slider"></span>
+            <span class="toggle-text">Auto clean tabs</span>
+        </label>
+        
+        <div class="time-inputs">
+            <label>
+            Hours
+            <input type="number" id="hours" min="0" placeholder="0">
+            </label>
+            <label>
+            Days
+            <input type="number" id="days" min="0" placeholder="0">
+            </label>
+            <label>
+            Weeks
+            <input type="number" id="weeks" min="0" placeholder="0">
+            </label>
+        </div>
+
+        <button id="save-threshold">💾 Save setting</button>
+        <span class="description">Auto-close idle tabs based on your time setting.</span>
+    </div>
+
+    
     <script src="popup.js"></script>
 </body>
 </html>

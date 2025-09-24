@@ -1,17 +1,27 @@
 {
   "manifest_version": 3,
-  "name": "Cluster",
+  "name": "ChromeCleaner",
   "version": "1.0",
-  "description": "Manage Tabs and Bookmarks",
+  "description": "Organize your chrome",
+  "permissions": [
+    "tabs",
+    "tabGroups",
+    "storage"
+  ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "My Extension"
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
-    "permissions": [
-    "tabs",
-    "bookmarks"
-  ],
-  "content_scripts": [
-    
-  ]
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
 }
