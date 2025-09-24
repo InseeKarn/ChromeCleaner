@@ -4,10 +4,23 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-08-
 export async function handler(event, context) {
   console.log('Request body:', event.body);
   try {
+
+    if (!event.body) {
+      return {
+        statusCode: 400,
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ error: 'No request body' })
+      };
+    }
+
     const { amount } = JSON.parse(event.body);
 
     if (!amount) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Amount is required' }) };
+      return {
+        statusCode: 400,
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ error: 'Amount is required' })
+      };
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -33,14 +46,14 @@ export async function handler(event, context) {
       },
       body: JSON.stringify({ url: session.url }) };
   } catch (err) {
-    console.error(err);
+    console.error('Stripe error:', err);
     return { 
       statusCode: 500,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type'
       },
-      body: JSON.stringify({ error: err.message })
+      body: JSON.stringify({ error: err.message || 'Internal server error' })
     };
     
   }
