@@ -105,14 +105,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ============== Progress bar ==============
 
     async function fetchDonationTotal() {
-    try {
-        const res = await fetch('https://script.google.com/macros/s/AKfycbw3InaLalRNRK33BKWvtro6JO_ihoFwfCMocwEkaU_TtVNu_S-AQVf9ZBlj6f7obN8/exec');
-        const data = await res.json();
-        return data.total || 0;
-        } catch (err) {
-            console.error('Failed to fetch donation total:', err);
-            return 0;
-        }
+        try {
+            const res = await fetch('https://script.google.com/macros/s/AKfycbzEIUOwpuqUs6XscehxW3e3GPX40cuMTCW-xVVrRtYrFbuLihQ7uDJn6jJeDyznuBQ/exec');
+            const data = await res.json();
+            return data.total || 0;
+            } catch (err) {
+                console.error('Failed to fetch donation total:', err);
+                return 0;
+            }
     }
 
     async function updateProgressBar() {
@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         progressText.textContent = `$${total} / $${goal}`;
     }
 
-    updateProgressBar();
+    setInterval(updateProgressBar, 3000);
 
     // ============== Progress bar ==============
 
