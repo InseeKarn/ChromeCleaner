@@ -115,18 +115,42 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
     }
 
+    let animating = false;
     async function updateProgressBar() {
+        if (animating) return;
+        animating = true;
+
         const total = await fetchDonationTotal();
-        const goal = 1000;
+        const goal = 100000;
         const percentage = Math.min((total / goal) * 100, 100);
 
         console.log("DEBUG total =", total, "goal =", goal);
 
-        progressBar.style.width = percentage + '%';
-        progressText.textContent = `$${total} / $${goal}`;
+
+        const duration = 2000;
+        const startTime = performance.now();
+        const startTotal = 0;
+
+        function animate(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            const currentTotal = Math.floor(startTotal + progress * (total - startTotal));
+            const currentPercentage = Math.min((currentTotal / goal) * 100, 100);
+
+            progressBar.style.width = currentPercentage + '%';
+            progressText.textContent = `$${currentTotal} / $${goal}`;
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        }
+
+    requestAnimationFrame(animate);
+
     }
 
-    updateProgressBar();
+    setInterval(updateProgressBar, 2000);
 
     // ============== Progress bar ==============
 
