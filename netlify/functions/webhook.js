@@ -1,9 +1,9 @@
 import Stripe from 'stripe';
-const stripe = new Stripe(process.env.STRIPE_TEST_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function handler(event, context) {
   const sig = event.headers['stripe-signature'];
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET; 
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET_TEST; 
 
   let stripeEvent;
 
