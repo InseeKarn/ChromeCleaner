@@ -205,6 +205,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             })
             .then(res => res.json())
             .then(data => {
+                console.log('Checkout response:', data);
                 if (data.url) {
                     sendResponse({ success: true, url: data.url });
                 } else {

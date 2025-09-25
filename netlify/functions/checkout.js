@@ -1,5 +1,5 @@
 const Stripe = require('stripe');
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-08-27' });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 exports.handler = async function(event, context) {
   console.log('Request body:', event.body);
@@ -53,6 +53,8 @@ exports.handler = async function(event, context) {
       success_url: 'https://chromecleaner.netlify.app/.netlify/functions/success',
       cancel_url: 'https://chromecleaner.netlify.app/.netlify/functions/cancel',
     });
+
+    console.log('Stripe session created:', session);
 
     return { 
       statusCode: 200,

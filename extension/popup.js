@@ -154,7 +154,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.addEventListener('click', () => {
             const amount = parseInt(btn.dataset.amount);
             const isLocal = window.location.hostname.includes('localhost');
+            // const isLocal = true;
 
+            console.log('Sending donate message:', { amount, isLocal });
             chrome.runtime.sendMessage(
                 { action: 'donate', amount, isLocal },
                 (response) => {
