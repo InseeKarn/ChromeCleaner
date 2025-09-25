@@ -50,8 +50,8 @@ exports.handler = async function(event, context) {
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: 'https://chromecleaner.netlify.app/.netlify/functions/success',
-      cancel_url: 'https://chromecleaner.netlify.app/.netlify/functions/cancel',
+      success_url: 'https://chromecleaner.netlify.app/extension/success.html',
+      cancel_url: 'https://chromecleaner.netlify.app/extension/cancel.html',
     });
 
     console.log('Stripe session created:', session);
