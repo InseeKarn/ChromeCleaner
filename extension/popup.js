@@ -3,12 +3,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const groupBtn = document.getElementById('groupBtn');
     const ungroupBtn = document.getElementById('ungroupBtn');
     const loading = document.getElementById('loading');
-    const toggle = document.getElementById('enable-filter');
+    const filter_toggle = document.getElementById('enable-filter');
+    const group_toggle = document.getElementById('enable-autogroup');
+    let autoGroupEnabled = group_toggle.checked;
 
-    const result = await chrome.storage.sync.get(['autoCleanEnabled']);
-    toggle.checked = result.autoCleanEnabled || false;
+    const filter_result = await chrome.storage.sync.get(['autoCleanEnabled']);
+    filter_toggle.checked = filter_result.autoCleanEnabled || false;
 
-
+    const group_result = await chrome.storage.sync.get(['autoGroupEnabled']);
+    if (group_result.autoGroupEnabled === undefined) {
+        group_toggle.checked = true;
+        chrome.storage.sync.set({ autoGroupEnabled: true });
+    } else {
+        group_toggle.checked = group_result.autoGroupEnabled;
+    }
     
     // Elements for stats
     const totalTabsEl = document.getElementById('totalTabs');
@@ -34,11 +42,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         ungroupBtn.disabled = false;
     }
 
-    // Toggle auto clean tabs
-    toggle.addEventListener('change', () => {
+    // Toggle auto group
+    group_toggle.addEventListener('change', async () => {
+        const enabled = group_toggle.checked;
+
+        chrome.runtime.sendMessage({ action: 'setAutoGroup', enabled });
+
+        if (enabled) {
+            await chrome.runtime.sendMessage({ action: 'groupTabsInitial' });
+        }
+    });
+
+    // Toggle auto clean
+    filter_toggle.addEventListener('change', () => {
         chrome.runtime.sendMessage({
             action: 'setAutoClean',
-            enabled: toggle.checked
+            enabled: filter_toggle.checked
         });
     });
     
@@ -57,23 +76,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error('Error updating stats:', error);
         }
     }
+
+    function sendMessagePromise(message) {
+        return new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage(message, (response) => {
+                if (chrome.runtime.lastError) return reject(chrome.runtime.lastError);
+                resolve(response);
+            });
+        });
+    }
     
-    // Group tabs
+    // Group tabs (manual)
     async function groupTabs() {
         showLoading();
         try {
-            const response = await chrome.runtime.sendMessage({ action: 'groupTabs' });
+            const response = await sendMessagePromise({ action: 'groupTabsManual' });
             if (response.success) {
-                setTimeout(async () => {
-                    await updateStats();
-                    hideLoading();
-                }, 1000);
+                await updateStats();
             } else {
                 console.error('Error grouping tabs:', response.error);
-                hideLoading();
             }
-        } catch (error) {
-            console.error('Error:', error);
+        } catch (err) {
+            console.error('Error:', err);
+        } finally {
             hideLoading();
         }
     }
@@ -101,7 +126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Event Listeners
     groupBtn.addEventListener('click', groupTabs);
     ungroupBtn.addEventListener('click', ungroupTabs);
-    
+ 
     // ============== Progress bar ==============
 
     async function fetchDonationTotal() {
@@ -129,7 +154,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const duration = 2000;
         const startTime = performance.now();
-        const startTotal = 0;
+        const startTotal = parseInt(progressText.textContent.replace(/\D/g, '')) || 0;
 
         function animate(currentTime) {
             const elapsed = currentTime - startTime;

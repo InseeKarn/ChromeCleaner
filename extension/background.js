@@ -16,7 +16,6 @@ function getGroupName(domain) {
   const domainMap = {
     'youtube.com': 'YouTube',
     'facebook.com': 'Facebook',
-    'twitter.com': 'Twitter',
     'instagram.com': 'Instagram',
     'github.com': 'GitHub',
     'google.com': 'Google',
@@ -39,13 +38,75 @@ function getGroupColor(domain) {
   return colors[Math.abs(hash) % colors.length];
 }
 
-// Grouptabs
-async function groupTabs() {
+let autoGroupEnabled = true;
+
+chrome.storage.sync.get(['autoGroupEnabled'], (result) => {
+    if (result.autoGroupEnabled === undefined) {
+        autoGroupEnabled = true;
+        chrome.storage.sync.set({ autoGroupEnabled: true });
+    } else {
+        autoGroupEnabled = result.autoGroupEnabled;
+    }
+});
+
+
+async function groupNewDomainTabs(newTab) {
+  if (!autoGroupEnabled) return;
+
+  const domain = getDomainFromUrl(newTab.url);
+  if (!domain) return;
+
+  const allTabs = await chrome.tabs.query({});
+  const matchingTabs = allTabs.filter(t => t.id !== newTab.id && getDomainFromUrl(t.url) === domain);
+
+  if (matchingTabs.length > 0) {
+    const existingGroup = matchingTabs.find(t => t.groupId !== -1);
+    if (existingGroup) {
+      await chrome.tabs.group({ groupId: existingGroup.groupId, tabIds: [newTab.id] });
+    } else {
+      await groupSpecificDomainTabs([newTab, ...matchingTabs]);
+    }
+  }
+}
+
+
+async function groupSpecificDomainTabs(tabsToGroup) {
+  if (tabsToGroup.length <= 1) return;
+
+  try {
+    const domain = getDomainFromUrl(tabsToGroup[0].url);
+    if (!domain) return;
+
+    const tabIds = tabsToGroup.map(tab => tab.id);
+    const groupName = getGroupName(domain);
+    const groupColor = getGroupColor(domain);
+
+    const groupId = await chrome.tabs.group({ tabIds });
+    await chrome.tabGroups.update(groupId, {
+      title: groupName,
+      color: groupColor,
+      collapsed: true
+    });
+
+    tabGroups.set(groupId, {
+      domain,
+      name: groupName,
+      color: groupColor,
+      collapsed: true
+    });
+
+  } catch (error) {
+    console.error('Error creating group for domain:', error);
+  }
+}
+
+
+async function groupAllTabs() {
   try {
     const tabs = await chrome.tabs.query({});
     const domainGroups = new Map();
-    
-    // sorted from domain
+
+
     for (const tab of tabs) {
       const domain = getDomainFromUrl(tab.url);
       if (domain && !tab.url.startsWith('chrome://') && !tab.url.startsWith('chrome-extension://')) {
@@ -55,26 +116,23 @@ async function groupTabs() {
         domainGroups.get(domain).push(tab);
       }
     }
-    
-    // Created group for > 1 domain
+
+
     for (const [domain, tabsInDomain] of domainGroups) {
       if (tabsInDomain.length > 1) {
         const tabIds = tabsInDomain.map(tab => tab.id);
         const groupName = getGroupName(domain);
         const groupColor = getGroupColor(domain);
-        
-        try {
 
+        try {
           const firstTab = tabsInDomain[0];
           if (firstTab.groupId === -1) {
-
             const groupId = await chrome.tabs.group({ tabIds });
             await chrome.tabGroups.update(groupId, {
               title: groupName,
               color: groupColor,
               collapsed: true
             });
-            
 
             tabGroups.set(groupId, {
               domain,
@@ -88,8 +146,9 @@ async function groupTabs() {
         }
       }
     }
+
   } catch (error) {
-    console.error('Error in groupTabs:', error);
+    console.error('Error in groupAllTabs:', error);
   }
 }
 
@@ -150,6 +209,23 @@ setInterval(filterOldTabs, 5000);
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     switch (msg.action) {
+        case 'groupTabsManual':
+        case 'groupTabsInitial':
+            groupAllTabs()
+                .then(() => sendResponse({ success: true }))
+                .catch(err => {
+                    console.error(err);
+                    sendResponse({ success: false, error: err.message });
+                });
+            return true;
+        case 'ungroupTabs':
+            ungroupTabs().then(() => sendResponse({ success: true }));
+            return true;
+        case 'setAutoGroup':
+            autoGroupEnabled = !!msg.enabled;
+            chrome.storage.sync.set({ autoGroupEnabled });
+            sendResponse({ success: true });
+            break;
         case 'setAutoClean':
             autoCleanEnabled = !!msg.enabled;
             chrome.storage.sync.set({ autoCleanEnabled });
@@ -181,11 +257,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             return true; // async
 
         case 'groupTabs':
-            groupTabs().then(() => sendResponse({ success: true }));
-            return true;
-
-        case 'ungroupTabs':
-            ungroupTabs().then(() => sendResponse({ success: true }));
+            groupAllTabs()
+                .then(() => sendResponse({ success: true }))
+                .catch(err => sendResponse({ success: false, error: err.message }));
             return true;
 
         case 'donate':
@@ -241,44 +315,17 @@ function setTimeThreshold(hours = 1, days = 0, weeks = 0) {
 
 // Event Listeners
 chrome.tabs.onCreated.addListener(async (tab) => {
-  // Wait for url load
-  setTimeout(async () => {
-    const domain = getDomainFromUrl(tab.url);
-    if (domain) {
-      // Check ig that have tabs in same domain?
-      const sameDomainTabs = await chrome.tabs.query({});
-      const matchingTabs = sameDomainTabs.filter(t => 
-        t.id !== tab.id && getDomainFromUrl(t.url) === domain
-      );
-      
-      if (matchingTabs.length > 0) {
-        // Find this domain have group exitst?
-        const existingGroup = matchingTabs.find(t => t.groupId !== -1);
-        if (existingGroup) {
-          // Add tabs
-          await chrome.tabs.group({ 
-            groupId: existingGroup.groupId, 
-            tabIds: [tab.id] 
-          });
-        } else {
-          await groupTabs();
-        }
-      }
-    }
-  }, 1000);
+    tabOpenTimes[tab.id] = Date.now();
 
-  tabOpenTimes[tab.id] = Date.now();
+    if (!autoGroupEnabled) return;
+
+    setTimeout(() => groupNewDomainTabs(tab), 1000);
 });
 
-
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url) {
-    const domain = getDomainFromUrl(tab.url);
-    if (domain) {
-      // Check if should created new grou?
-      setTimeout(() => groupTabs(), 500);
+    if (changeInfo.status === 'complete' && tab.url && autoGroupEnabled) {
+        setTimeout(() => groupNewDomainTabs(tab), 500);
     }
-  }
 });
 
 chrome.tabs.onRemoved.addListener(async (tabId, removeInfo) => {
@@ -309,16 +356,61 @@ chrome.tabGroups.onUpdated.addListener(async (group) => {
   }
 });
 
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+
+    console.log('Context menu clicked', info, tab);
+
+    if (info.menuItemId === "groupDomainTabs") {
+        const domain = getDomainFromUrl(tab.url);
+        if (!domain) return;
+
+        const allTabs = await chrome.tabs.query({});
+        const matchingTabs = allTabs.filter(t => getDomainFromUrl(t.url) === domain);
+
+        console.log('Tabs to group:', matchingTabs);
+
+        // group tabs
+        await groupSpecificDomainTabs(matchingTabs);
+    }
+});
 
 
-
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(async () => {
   console.log('ChromeCleaner installed');
-  setTimeout(() => groupTabs(), 1000);
+
+  chrome.contextMenus.create({
+    id: "groupDomainTabs",
+    title: "Group tabs by this domain",
+    contexts: ["tab"]
+  });
+  
+  console.log('Context menu created');
+
+  const result = await chrome.storage.sync.get(['autoGroupEnabled']);
+  if (result.autoGroupEnabled !== undefined) {
+    autoGroupEnabled = result.autoGroupEnabled;
+  } else {
+
+    autoGroupEnabled = true;
+    chrome.storage.sync.set({ autoGroupEnabled: true });
+  }
+
+
+  if (autoGroupEnabled) {
+    setTimeout(() => groupAllTabs(), 1000);
+  }
 });
 
 // Group when start
-chrome.runtime.onStartup.addListener(() => {
-  setTimeout(() => groupTabs(), 2000);
+chrome.runtime.onStartup.addListener(async () => {
+
+  const result = await chrome.storage.sync.get(['autoGroupEnabled']);
+  if (result.autoGroupEnabled !== undefined) {
+    autoGroupEnabled = result.autoGroupEnabled;
+  }
+
+  if (autoGroupEnabled) {
+    setTimeout(() => groupAllTabs(), 2000);
+  }
 });
 
