@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function fetchDonationTotal() {
         try {
-            const res = await fetch('https://script.google.com/macros/s/AKfycbzEIUOwpuqUs6XscehxW3e3GPX40cuMTCW-xVVrRtYrFbuLihQ7uDJn6jJeDyznuBQ/exec');
+            const res = await fetch('https://script.google.com/macros/s/AKfycbyxjRwmCxnyCNQVZhUyEtnWs-dkaKLS-29JoxZJZpILG9EWecQsqTBqMBN1ZDUHPxY/exec');
             const data = await res.json();
             return data.total || 0;
             } catch (err) {
@@ -119,11 +119,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const total = await fetchDonationTotal();
         const goal = 1000;
         const percentage = Math.min((total / goal) * 100, 100);
+
+        console.log("DEBUG total =", total, "goal =", goal);
+
         progressBar.style.width = percentage + '%';
         progressText.textContent = `$${total} / $${goal}`;
     }
 
-    setInterval(updateProgressBar, 3000);
+    updateProgressBar();
 
     // ============== Progress bar ==============
 

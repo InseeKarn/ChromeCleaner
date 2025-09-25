@@ -20,7 +20,7 @@ export async function handler(event, context) {
 
 
     try {
-      await fetch('https://script.google.com/macros/s/AKfycbzEIUOwpuqUs6XscehxW3e3GPX40cuMTCW-xVVrRtYrFbuLihQ7uDJn6jJeDyznuBQ/exec', {
+      await fetch('https://script.google.com/macros/s/AKfycbyxjRwmCxnyCNQVZhUyEtnWs-dkaKLS-29JoxZJZpILG9EWecQsqTBqMBN1ZDUHPxY/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: amount / 100 })
