@@ -104,29 +104,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // ============== Progress bar ==============
 
-    const goal = 1000;
-    const current = 0;
-    let displayedAmount = 0;
-
-    function animateProgress(target) {
-        const step = Math.ceil(goal / 100);
-        const interval = setInterval(() => {
-        if (displayedAmount < target) {
-            displayedAmount += step;
-            if (displayedAmount > target) displayedAmount = target;
-
-            const percentage = Math.min((displayedAmount / goal) * 100, 100);
-            if (progressBar && progressText) {
-            progressBar.style.width = percentage + '%';
-            progressText.textContent = `$${displayedAmount} / $${goal}`;
-            }
-        } else {
-            clearInterval(interval);
-        }
-        }, 30);
+    async function fetchDonationTotal() {
+    try {
+        const res = await fetch('https://chromecleaner.netlify.app/.netlify/functions/donations.json');
+        const data = await res.json();
+        return data.total || 0;
+    } catch (err) {
+        console.error('Failed to fetch donation total:', err);
+        return 0;
+    }
     }
 
-    animateProgress(current);
+    async function updateProgressBar() {
+    const total = await fetchDonationTotal();
+    const goal = 1000;
+    const percentage = Math.min((total / goal) * 100, 100);
+    progressBar.style.width = percentage + '%';
+    progressText.textContent = `$${total} / $${goal}`;
+    }
+
+    updateProgressBar();
 
     // ============== Progress bar ==============
 
@@ -170,6 +167,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+
+    
+    // Custom amount
+    const donateCustomBtn = document.getElementById('donateCustomBtn');
+    donateCustomBtn.addEventListener('click', () => {
+        const input = document.getElementById('customAmount');
+        let amount = parseFloat(input.value);
+
+        if (!amount || amount < 1) {
+            alert('Please enter a valid amount (min $1)');
+            return;
+        }
+
+        const isLocal = window.location.hostname.includes('localhost');
+        console.log('Sending custom donate message:', { amount, isLocal });
+        chrome.runtime.sendMessage(
+            { action: 'donate', amount, isLocal },
+            (response) => {
+                if (response.success && response.url) {
+                    chrome.tabs.create({ url: response.url });
+                } else {
+                    console.error('Donate failed:', response.error);
+                }
+            }
+        );
+    });
     
     await updateStats();
     setInterval(updateStats, 2000);

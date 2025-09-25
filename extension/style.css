@@ -234,6 +234,22 @@ body {
     font-family: 'BoldFont', sans-serif;
 }
 
+.donate-options input[type="number"] {
+    width: 80%;
+    padding: 8px 10px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    text-align: center;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.donate-options input[type="number"]:focus {
+    border-color: #0074d4;
+    box-shadow: 0 0 5px rgba(0, 116, 212, 0.5);
+}
+
 .donate-section h3 {
     font-size: 20px;
     color: #2a5d2a;
