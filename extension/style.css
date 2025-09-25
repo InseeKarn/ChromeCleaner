@@ -225,11 +225,12 @@ body {
 /* Donate */
 
 .donate-section {
-    background: linear-gradient(135deg, #e6f0e6, #d0e6d0);
+    background: linear-gradient(135deg, #c298e9, #a08db9);
     border-radius: 12px;
     padding: 20px;
     margin-top: 20px;
     text-align: center;
+    font-family: 'BoldFont';
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     font-family: 'BoldFont', sans-serif;
 }
@@ -252,13 +253,13 @@ body {
 
 .donate-section h3 {
     font-size: 20px;
-    color: #2a5d2a;
+    color: #13611a;
     margin-bottom: 1px;
     margin-top: 0;
 }
 
 .donate-section p {
-    font-size: 14px;
+    font-size: 15px;
     color: #333;
     margin-bottom: 15px;
 }
@@ -301,7 +302,7 @@ body {
 .progress-bar {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #4CAF50, #81C784);
+  background: linear-gradient(90deg, #572a69, #714383);
   transition: width 0.3s ease-out;
 }
 
