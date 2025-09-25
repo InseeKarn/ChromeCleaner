@@ -18,7 +18,7 @@ export async function handler(event, context) {
     const session = stripeEvent.data.object;
     const amount = session.amount_total;
 
-    const fetch = require('node-fetch');
+
     async function addDonation(amount) {
         try {
             await fetch('https://script.google.com/macros/s/AKfycbw3InaLalRNRK33BKWvtro6JO_ihoFwfCMocwEkaU_TtVNu_S-AQVf9ZBlj6f7obN8/exec', {
