@@ -1,5 +1,5 @@
 const Stripe = require('stripe');
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_TEST_KEY);
 
 exports.handler = async function(event, context) {
   console.log('Request body:', event.body);
