@@ -106,21 +106,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function fetchDonationTotal() {
     try {
-        const res = await fetch('https://chromecleaner.netlify.app/.netlify/functions/donations.json');
+        const res = await fetch('https://script.google.com/macros/s/AKfycbw3InaLalRNRK33BKWvtro6JO_ihoFwfCMocwEkaU_TtVNu_S-AQVf9ZBlj6f7obN8/exec');
         const data = await res.json();
         return data.total || 0;
-    } catch (err) {
-        console.error('Failed to fetch donation total:', err);
-        return 0;
-    }
+        } catch (err) {
+            console.error('Failed to fetch donation total:', err);
+            return 0;
+        }
     }
 
     async function updateProgressBar() {
-    const total = await fetchDonationTotal();
-    const goal = 1000;
-    const percentage = Math.min((total / goal) * 100, 100);
-    progressBar.style.width = percentage + '%';
-    progressText.textContent = `$${total} / $${goal}`;
+        const total = await fetchDonationTotal();
+        const goal = 1000;
+        const percentage = Math.min((total / goal) * 100, 100);
+        progressBar.style.width = percentage + '%';
+        progressText.textContent = `$${total} / $${goal}`;
     }
 
     updateProgressBar();
