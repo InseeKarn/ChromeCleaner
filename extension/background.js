@@ -381,7 +381,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   chrome.contextMenus.create({
     id: "groupDomainTabs",
     title: "Group tabs by this domain",
-    contexts: ["tab"]
+    contexts: ["all"]
   });
   
   console.log('Context menu created');

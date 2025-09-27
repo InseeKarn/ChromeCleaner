@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "ChromeCleaner",
+  "name": "ChromeCleaner – Organize Tabs Automatically",
   "version": "1.0",
-  "description": "Organize your chrome",
+  "description": "Automatically group your Chrome tabs by website. Save time, stay organized, and manage your tabs effortlessly!",
   "permissions": [
     "tabs",
     "tabGroups",
